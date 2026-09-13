@@ -1,3 +1,5 @@
+
+#define _POSIX_C_SOURCE 200809L // pa q el strtok funcione
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
