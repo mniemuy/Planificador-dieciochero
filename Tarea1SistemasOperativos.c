@@ -16,6 +16,7 @@ int nd;                 //cuántas dependencias tiene
 
 
 int main(int argc, char* argv[]){
+
 if(argc < 3 || argc > 3){
     return -1; //esto es x si algún chistosito no le da suficientes argumentos o le da de más jeje
 }
@@ -29,29 +30,45 @@ if(f == NULL){
 char buffer[676]; //de acá van a salir los datos q se leen en el .txt para separarlos
 char* save = NULL; //save point
 
-int ind = 1; //pal ciclo!!
+int ind = 1; //pal ciclo de movimiento!!
+int c = 0; // pal pre ciclo ciclo
+//2
+while(fgets(buffer, sizeof(buffer), f) != NULL){
+c++;
+}   
 
-    
+rewind(f); //conté las lineas para guardar todo con un malloc todopoderoso, esto es pa leer el archivo de nuevo
+
+struct datoken* espacio = malloc(sizeof(struct datoken)*c); // la cantidad de lineas por la cantidad de bytes que ocupa cada cosa en el struct, no el texto de cada cosa
+
+
+int c2 = 0;
 
 while(fgets(buffer, sizeof(buffer), f) != NULL){ //mientras haya datos, es cmo un read
 
     char* sep = strtok_r(buffer, ":", &save);  //los archivos están separados por un :
     struct datoken pama;//para ir cambiando c/u
-    
-    while(sep != NULL){        
+ 
+
+
+    while(sep != NULL){        //movimiento
     
      if(ind == 1){
-         pama.ID_Actividad = malloc(strlen(sep)+ 1);
+        pama.ID_Actividad = malloc(strlen(sep)+ 1);
         strcpy(pama.ID_Actividad, sep);
         printf("PAMAPRINT: %s\n", pama.ID_Actividad);
+         espacio[c2].ID_Actividad = pama.ID_Actividad;
         ind++;
     } else if(ind == 2){
+        
         pama.Nombre_actividad = malloc(strlen(sep)+ 1);
         strcpy(pama.Nombre_actividad, sep);
         printf("PAMAPRINT: %s\n", pama.Nombre_actividad);
+        espacio[c2].Nombre_actividad = pama.Nombre_actividad;
         ind++; 
     } else if(ind == 3){
         pama.tiempo_ms = atoi(sep);
+         espacio[c2].tiempo_ms = pama.tiempo_ms;
     printf("PAMAPRINT: %d\n", pama.tiempo_ms);
         ind++;
     } else if(ind == 4){
@@ -59,38 +76,43 @@ while(fgets(buffer, sizeof(buffer), f) != NULL){ //mientras haya datos, es cmo u
         pama.nd = 0;
         char* save2 = NULL;
 
-        char* aux =     strtok_r(sep, ",\n", &save2);
-       
+        char* aux = strtok_r(sep, " ,\n", &save2); // el espacio está a propósito
+        
         while(aux != NULL){
             pama.dependencias = realloc(pama.dependencias, (pama.nd + 1)*sizeof(char*));
 
             pama.dependencias[pama.nd] = malloc(strlen(aux) + 1);
             strcpy(pama.dependencias[pama.nd], aux);
+            
             pama.nd++;
-
-            aux = strtok_r(NULL, ",\n", &save2);
+            aux = strtok_r(NULL, " ,\n", &save2); // el espacio está a propósito
         }
+        espacio[c2].dependencias = pama.dependencias;//UN PUNTERO
+        espacio[c2].nd = pama.nd;
         
-            printf("Actividad %s tiene %d dependencias: ", pama.ID_Actividad, pama.nd);
-            for (int i = 0; i < pama.nd; i++) {
-                     printf("[%s] ", pama.dependencias[i]);
-                }
-                printf("\n");
-                    //verificar la verificación (estoy chato basta por favor)
-    }
-
+        
+    } 
     //lo dejé pa hoy efectivamente
     printf("Separación: %s\n", sep);
 
     sep = strtok_r(NULL, ":", &save);    
   
     }
-  ind = 1;    
+    c2++;
+    ind = 1;    
 }   
 //para parsear quiero meter distintos tokens para ocpar el de las dependencias como uno solo
 
 
+for (int i = 0; i < c; i++) {
+    printf("espacio[%d]..................................\n", i);
+    printf("ID: %s\n", espacio[i].ID_Actividad);
+    printf("nombre: %s\n", espacio[i].Nombre_actividad);
+    printf("tiempo: %d\n", espacio[i].tiempo_ms);
+    printf("dependencias: %d\n", espacio[i].nd);
+}
 
+//verificar la verificación nuevamente
 
 
 fclose(f);
