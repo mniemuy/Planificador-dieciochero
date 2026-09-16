@@ -12,6 +12,8 @@ char* Nombre_actividad;
 int tiempo_ms;
 char** dependencias; //la tarea dice alfanumérico, cubriendo ese caso queda así
 int nd;                 //cuántas dependencias tiene
+struct datoken** dlist; //lista de dependencias, puntero a strings para leerlas todas
+int dcounter;  //cuenta las dependencias actuales, para actuar cuando sea 0
 };
 
 
@@ -20,6 +22,10 @@ int main(int argc, char* argv[]){
 if(argc < 3 || argc > 3){
     return -1; //esto es x si algún chistosito no le da suficientes argumentos o le da de más jeje
 }
+
+int conlimit = atoi(argv[2]); //límite de concurrencia, llega en arg cmo string, atoi lo convierte a int igual q abajo
+
+
 FILE *f = fopen(argv[1], "r");// siempre pasa archivo.txt en pos 1, pos 0 ./hola - pos1 archivo.txt - pos2 K = 'num'
 if(f == NULL){
     return -1;//si no se abrió
@@ -101,13 +107,7 @@ while(getline(&buffer, &capacidad, f) != -1){ //mientras haya datos, es cmo un r
 //para parsear quiero meter distintos tokens para ocpar el de las dependencias como uno solo
 
 
-for (int i = 0; i < c; i++) {
-    printf("espacio[%d]..................................\n", i);
-    printf("ID: %s\n", espacio[i].ID_Actividad);
-    printf("nombre: %s\n", espacio[i].Nombre_actividad);
-    printf("tiempo: %d\n", espacio[i].tiempo_ms);
-    printf("dependencias: %d\n", espacio[i].nd);
-}
+
 
 //verificar la verificación nuevamente
 free(buffer);//o morimos
