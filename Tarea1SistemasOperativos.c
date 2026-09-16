@@ -13,7 +13,7 @@ int tiempo_ms;
 char** dependencias; //la tarea dice alfanumérico, cubriendo ese caso queda así
 int nd;                 //cuántas dependencias tiene
 struct datoken** dlist; //lista de dependencias, puntero a strings para leerlas todas
-int dcounter;  //cuenta las dependencias actuales, para actuar cuando sea 0
+int dcounter;  //cuenta los dependientes* actuales, para actuar cuando sea 0
 };
 
 
