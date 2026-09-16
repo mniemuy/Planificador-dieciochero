@@ -27,13 +27,14 @@ if(f == NULL){
 //strtok normal es muy poco manejable, con la versión _r nosotros controlamos el stack y dónde queda para el parseo
 //en strtok si intentas tokenizar dos cosas distintas a la vez no funciona, cmo q se pisan
 
-char buffer[676]; //de acá van a salir los datos q se leen en el .txt para separarlos
+char *buffer = NULL;
+size_t capacidad = 0; // ahora lo haré con getline pq hace malloc internamente
 char* save = NULL; //save point
 
 int ind = 1; //pal ciclo de movimiento!!
 int c = 0; // pal pre ciclo ciclo
 //2
-while(fgets(buffer, sizeof(buffer), f) != NULL){
+while(getline(&buffer, &capacidad, f) != -1){
 c++;
 }   
 
@@ -44,7 +45,7 @@ struct datoken* espacio = malloc(sizeof(struct datoken)*c); // la cantidad de li
 
 int c2 = 0;
 
-while(fgets(buffer, sizeof(buffer), f) != NULL){ //mientras haya datos, es cmo un read
+while(getline(&buffer, &capacidad, f) != -1){ //mientras haya datos, es cmo un read
 
     char* sep = strtok_r(buffer, ":", &save);  //los archivos están separados por un :
     struct datoken pama;//para ir cambiando c/u
@@ -56,20 +57,18 @@ while(fgets(buffer, sizeof(buffer), f) != NULL){ //mientras haya datos, es cmo u
      if(ind == 1){
         pama.ID_Actividad = malloc(strlen(sep)+ 1);
         strcpy(pama.ID_Actividad, sep);
-        printf("PAMAPRINT: %s\n", pama.ID_Actividad);
          espacio[c2].ID_Actividad = pama.ID_Actividad;
         ind++;
     } else if(ind == 2){
         
         pama.Nombre_actividad = malloc(strlen(sep)+ 1);
         strcpy(pama.Nombre_actividad, sep);
-        printf("PAMAPRINT: %s\n", pama.Nombre_actividad);
         espacio[c2].Nombre_actividad = pama.Nombre_actividad;
         ind++; 
     } else if(ind == 3){
         pama.tiempo_ms = atoi(sep);
          espacio[c2].tiempo_ms = pama.tiempo_ms;
-    printf("PAMAPRINT: %d\n", pama.tiempo_ms);
+
         ind++;
     } else if(ind == 4){
         pama.dependencias = NULL;
@@ -92,9 +91,7 @@ while(fgets(buffer, sizeof(buffer), f) != NULL){ //mientras haya datos, es cmo u
         
         
     } 
-    //lo dejé pa hoy efectivamente
-    printf("Separación: %s\n", sep);
-
+   
     sep = strtok_r(NULL, ":", &save);    
   
     }
@@ -113,8 +110,8 @@ for (int i = 0; i < c; i++) {
 }
 
 //verificar la verificación nuevamente
+free(buffer);//o morimos
 
-
-fclose(f);
+fclose(f);//terminemos esto como lo empezamos luciano, juntos
 return 0;
 }
