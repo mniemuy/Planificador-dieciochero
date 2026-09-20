@@ -12,8 +12,8 @@ char* Nombre_actividad;
 int tiempo_ms;
 char** dependencias; //la tarea dice alfanumérico, cubriendo ese caso queda así
 int nd;                 //cuántas dependencias tiene
-struct datoken** dlist; //lista de dependencias, puntero a strings para leerlas todas
-int dcounter;  //cuenta las dependencias actuales, para actuar cuando sea 0
+struct datoken** dlist; //lista de dependientes, puntero a tipo datoken accede a cada una d las cositas
+int dcounter;  //cuenta los dependientes actuales (trabajando)
 };
 
 
@@ -56,7 +56,8 @@ while(getline(&buffer, &capacidad, f) != -1){ //mientras haya datos, es cmo un r
     char* sep = strtok_r(buffer, ":", &save);  //los archivos están separados por un :
     struct datoken pama;//para ir cambiando c/u
  
-
+    espacio[c2].dlist = NULL; //dag
+    espacio[c2].dcounter = 0;
 
     while(sep != NULL){        //movimiento
     
@@ -84,7 +85,7 @@ while(getline(&buffer, &capacidad, f) != -1){ //mientras haya datos, es cmo un r
         char* aux = strtok_r(sep, " ,\n", &save2); // el espacio está a propósito
         
         while(aux != NULL){
-            pama.dependencias = realloc(pama.dependencias, (pama.nd + 1)*sizeof(char*));
+            pama.dependencias = realloc(pama.dependencias, (pama.nd + 1)*sizeof(char*)); // nos importa el contexto, lo q había antes
 
             pama.dependencias[pama.nd] = malloc(strlen(aux) + 1);
             strcpy(pama.dependencias[pama.nd], aux);
@@ -97,6 +98,8 @@ while(getline(&buffer, &capacidad, f) != -1){ //mientras haya datos, es cmo un r
         
         
     } 
+
+
    
     sep = strtok_r(NULL, ":", &save);    
   
@@ -105,6 +108,21 @@ while(getline(&buffer, &capacidad, f) != -1){ //mientras haya datos, es cmo un r
     ind = 1;    
 }   
 //para parsear quiero meter distintos tokens para ocpar el de las dependencias como uno solo
+
+for(int i = 0; i < c; i++){//para todas las lineas parseadas    
+    for(int j = 0; j < espacio[i].nd; j++){ //para todas las dependencias de cada linea
+        for(int k = 0; k < c; k++){
+         if(strcmp(espacio[k].ID_Actividad, espacio[i].dependencias[j]) == 0){// si son iguales, realloc
+                espacio[k].dlist = realloc(espacio[k].dlist, (espacio[k].dcounter + 1) * sizeof(struct datoken*)); 
+         }
+        }
+    }
+}// entro a actividades, luego a dependencias, y por cada dependencia reviso actividades nuevamente, para poder juntarlas
+//según la tarea son alfanuméricas, es decisión de diseño un poco más ineficiente, pero funciona para cualquier nombre de id que le pongan
+//strcmp va comparando una a una actividades k, con dependencias j de una actividad i
+//si son iguales, hace que en dlist del espacio en la posición k, se haga un espacio nuevo de memoria, manteniendo el anterior para tener la lista completa de dependientes
+//el primer argumento es donde, y el segundo es la cantidad de dependientes que hay +1 por los espacios de cada item en un struct datoken
+//osea, por ejemplo 1, 4 es dependiente de este. entonces 1 hace un puntero a 4, ya que 1 tiene que ver quien lo está esperando para "avisar"
 
 
 
