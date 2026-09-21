@@ -114,6 +114,10 @@ for(int i = 0; i < c; i++){//para todas las lineas parseadas
         for(int k = 0; k < c; k++){
          if(strcmp(espacio[k].ID_Actividad, espacio[i].dependencias[j]) == 0){// si son iguales, realloc
                 espacio[k].dlist = realloc(espacio[k].dlist, (espacio[k].dcounter + 1) * sizeof(struct datoken*)); 
+
+                espacio[k].dlist[espacio[k].dcounter] = &espacio[i];
+                espacio[k].dcounter++;
+                break;
          }
         }
     }
@@ -125,7 +129,13 @@ for(int i = 0; i < c; i++){//para todas las lineas parseadas
 //osea, por ejemplo 1, 4 es dependiente de este. entonces 1 hace un puntero a 4, ya que 1 tiene que ver quien lo está esperando para "avisar"
 
 
-
+for (int i = 0; i < c; i++) {
+    printf("Actividad %s tiene %d dependientes: ", espacio[i].ID_Actividad, espacio[i].dcounter);
+    for (int x = 0; x < espacio[i].dcounter; x++) {
+        printf("[%s] ", espacio[i].dlist[x]->ID_Actividad);
+    }
+    printf("\n");
+}
 
 //verificar la verificación nuevamente
 free(buffer);//o morimos
