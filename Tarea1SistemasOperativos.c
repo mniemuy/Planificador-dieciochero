@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,6 +18,9 @@ struct datoken** dlist; //lista de dependientes, puntero a tipo datoken accede a
 int dcounter;  //cuenta los dependientes actuales (trabajando)
 // MERGE: dlist/dcounter son de la rama de Lukas. En tu rama el struct ya no los traía,
 // pero los necesitamos sí o sí para poder armar el DAG y avisarle a los dependientes.
+int restantes; //para ir restando en otra cosa que no sea pama.nd
+pid_t pid;
+int fail; // 1 si la actividad murió, los dependientes se abortan(jaj)
 };
 
 
@@ -33,7 +37,7 @@ char* trim(char* s){ //hay que contemplar sacar los espacios en blanco q puedan 
         fin--;
     *(fin + 1) = '\0';    //le ponemos fin justo despues del ultimo char que no era espacio
     return s;//devolvemos el string ya recortado q sigue apuntando dentro del mismo espacio de memoria, no es un nuevo string!!! ojo al charqui
-}
+}//XD
 
 
 int main(int argc, char* argv[]){
@@ -85,6 +89,7 @@ while(getline(&buffer, &capacidad, f) != -1){ //mientras haya datos, es cmo un r
     pama.nd = 0; //se garantiza pase lo que pase, no depende del ind==4, ya que si no hay dependencias, no se entra al if y queda en 0, lo cual es correcto
     espacio[c2].dlist = NULL; //dag
     espacio[c2].dcounter = 0;
+    espacio[c2].fail = 0;
 
     while(sep != NULL){ //movimiento
 
@@ -135,6 +140,8 @@ while(getline(&buffer, &capacidad, f) != -1){ //mientras haya datos, es cmo un r
 
             espacio[c2].dependencias = pama.dependencias;//UN PUNTERO
             espacio[c2].nd = pama.nd;
+            espacio[c2].restantes = pama.nd;
+            
         }
 
         //lo dejé pa hoy efectivamente
@@ -182,11 +189,85 @@ for (int i = 0; i < c; i++) {
         printf("[%s] ", espacio[i].dlist[x]->ID_Actividad);
     }
     printf("\n");
+}//VERIFICEISHON
+
+//creacion d procesos 
+int* q = malloc(sizeof(int) * c);//tomar memoria en base a la cantidad de actividades
+int qini = 0, qend = 0;
+
+for (int i = 0; i < c; i++) {
+    if (espacio[i].restantes == 0) {
+        q[qend] = i;  //guarda i en la posición actual de q end
+        qend = qend + 1;  
+    }
 }
+
+int activos = 0;
+
+while (qini < qend || activos > 0) {
+
+    while (activos < conlimit && qini < qend) {
+        int idx = q[qini++];
+
+        pid_t pid = fork();
+
+        if (pid == 0) {
+            usleep(espacio[idx].tiempo_ms * 1000); // sleep normal es incapaz de tomar valores decimales, usleep no está bajo el estándar
+            //tengo q cambiar el define para que cumpla
+            _exit(0);
+        } else if (pid > 0) {
+            espacio[idx].pid = pid;
+            activos++;
+        } else {
+            espacio[idx].fail = 1;
+            for (int x = 0; x < espacio[idx].dcounter; x++) {
+                struct datoken* dep = espacio[idx].dlist[x];
+                dep->restantes--;
+                dep->fail = 1; //su hay fallo, se propaga
+                if (dep->restantes == 0) {
+                    q[qini++] = (int)(dep - espacio);
+                }
+            }
+        }
+    }
+
+    if (activos == 0) break;
+
+    int status;
+    pid_t pid_terminado = wait(&status);
+    activos--;
+
+    int idx_terminado = -1;
+    for (int i = 0; i < c; i++) {
+        if (espacio[i].pid == pid_terminado) {
+            idx_terminado = i;
+            break;
+        }
+    }
+
+    for (int x = 0; x < espacio[idx_terminado].dcounter; x++) {
+        struct datoken* dep = espacio[idx_terminado].dlist[x];
+        dep->restantes--;
+        if (espacio[idx_terminado].fail) {
+            dep->fail = 1; // se propaga el fallo hacia adelante en la cadena
+        }   
+        if (dep->restantes == 0) {
+            q[qend++] = (int)(dep - espacio);
+        }
+    }
+}
+
+free(q);
+
+
+
+
+
+
 
 //verificar la verificación nuevamente
 free(buffer);//o morimos
 
 fclose(f);//terminemos esto como lo empezamos luciano, juntos
 return 0;
-}
+}   
