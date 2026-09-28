@@ -1,7 +1,7 @@
 # Planificador dieciochero
 
-Tarea 1 de Sistemas Operativos (UDP). El programa lee un plan de actividades
-con dependencias y lo ejecuta como un DAG usando procesos, pipes y señales.
+Tarea 1 de Sistemas Operativos (UDP). Nuestro programa lee un archivo .txt, que es un plan de actividades, cada una
+con sus respectivas dependencias y lo ejecuta como un DAG usando procesos, pipes y señales.
 
 No se usan threads ni mecanismos de sincronización de hilos. La coordinación
 se hace con `fork()`, `wait()`, pipes y señales.
@@ -9,7 +9,7 @@ se hace con `fork()`, `wait()`, pipes y señales.
 ## Archivos
 
 - `Tarea1SistemasOperativos.c`: programa principal.
-- `generador_estres.c`: genera un plan grande para probar el criterio 2.4.
+- `generador_estres.c`: genera un plan grande para probar el criterio 2.4, para simular previo a la evaluación.
 - `plan.txt`: ejemplo de entrada.
 
 ## Compilación
@@ -20,8 +20,8 @@ El programa principal se compila con:
 gcc -Wall -Wextra -std=c17 Tarea1SistemasOperativos.c -o planificador
 ```
 
-La rúbrica menciona `-lpthread`; no se necesita porque este programa no usa
-threads ni ninguna API de hilos. Si se quiere compilar exactamente con esa
+Para `-lpthread`; no se necesita porque este programa no usa
+threads ni ninguna API de hilos. En caso de querer compilar exactamente con esa
 flag también funciona:
 
 ```bash
@@ -55,11 +55,18 @@ ID : nombre : tiempo_ms : dependencias
 Si el tiempo viene vacío, el programa genera uno aleatorio entre 100 y 5000
 ms. Las dependencias se separan por comas.
 
+Definimos _POSIX_C_SOURCE 200809L antes de cualquier #include, porque funciones
+como strtok_r(), fork(), wait(), pipe() y nanosleep() son extensiones POSIX, no
+parte del estándar C17 puro que exige -std=c17. Sin esa macro, el compilador las 
+trata como no declaradas, no funciona.
+
 ## 1.1 Parseo
 
 Se usa `getline()` para no depender de un buffer de tamaño fijo. Después se
 usa `strtok_r()` para separar los campos por `:` y otro `strtok_r()` para las
-dependencias.
+dependencias, se usa esta versión y no `strtok()` porque para las dependencias
+necesitamos dos tokenizaciones anidadas, y al estar las dos usando el mismo punto
+de guardado al mismo tiempo se "pisaban" entre ellas.
 
 Los IDs se guardan como strings porque la tarea permite IDs alfanuméricos.
 `trim()` elimina los espacios que vienen alrededor de los campos.
@@ -70,7 +77,7 @@ Cuando el tiempo está vacío, se usa:
 100 + rand() % 4901
 ```
 
-para obtener un tiempo entre 100 y 5000 ms.
+para obtener un tiempo random entre 100 y 5000 ms.
 
 ## 1.2 DAG
 
@@ -79,15 +86,22 @@ Cada actividad guarda sus dependencias en `dependencias`. Además se arma
 A guarda un puntero hacia B.
 
 Para encontrar los IDs se usa `strcmp()` recorriendo las actividades. Esto es
-O(n²), pero permite trabajar con IDs alfanuméricos arbitrarios sin agregar una
-estructura más complicada.
+O(n²), pero nos dejó trabajar con IDs alfanuméricos sin agregar una
+estructura más complicada como por ejemplo implementar un map desde 0.
 
 Una dependencia que no existe en el archivo se considera un plan mal formado
 y el programa termina con error.
 
 También se revisan ciclos. Si no hay ninguna raíz al principio, se informa el
-posible ciclo. Si sí hay raíces pero después quedan actividades sin resolver,
+posible ciclo. Si hay raíces pero después quedan actividades sin resolver,
 se informa como ciclo parcial.
+
+Se guardan punteros directos a struct datoken en dlist, para que al avisar a los dependientes
+en tiempo de ejecución no haya que volver a buscar con strcmp, solo sucede una vez.
+
+Se mantienen dos contadores separados: nd cantidad total de dependencias y restantes, cuántas faltan
+para terminar. Si se usara un solo campo para ambos, cuando llegue a 0 perdemos el número original de
+dependencias.
 
 ## 2.1 Procesos y límite K
 
@@ -97,8 +111,8 @@ Cada actividad que queda lista se ejecuta en un proceso hijo creado con
 La cola `q` guarda las actividades que ya pueden comenzar. El padre mantiene
 `activos` y no crea más hijos cuando llega a `K`.
 
-Cuando se llega al límite se usa `wait()` para esperar a que termine algún
-hijo. No se hace busy-waiting.
+Cuando se llega al límite se usa `wait()` para esperar a que termine cualquiera 
+de los hijos. No se hace busy-waiting.
 
 ## 2.2 Pipes
 
@@ -130,9 +144,13 @@ Si un hijo termina con código distinto de cero, su actividad queda marcada
 como fallida. Sus dependientes reciben el mismo estado y no se hace `fork()`
 para ellos. El fallo se propaga por `dlist`.
 
+Basta con que una sola dependencia falle para que toda la cadena de sus dependientes
+quede marcada como fallida, incluso si otras dependencias de esos mismos nodos terminaron bien.
+
 El hijo vuelve a sembrar `rand()` usando `time(NULL) ^ getpid()` porque
-`fork()` copia el estado del generador aleatorio. Sin esto, varios hijos
-creados casi al mismo tiempo podrían terminar usando la misma secuencia.
+`fork()` copia el estado del generador aleatorio. Esto tiene que estar,
+si no, varios hijos creados casi al mismo tiempo podrían terminar usando 
+la misma secuencia.
 
 ## 2.4 Prueba de estrés
 
@@ -163,6 +181,10 @@ cuando llega Ctrl+C.
 Cuando llega SIGINT, el padre manda `SIGTERM` a los hijos activos y espera por
 ellos con `waitpid()` antes de terminar, evitando dejar zombies o hijos
 huérfanos.
+
+Cuando a wait() lo interrumpe la signal errno == EINTR, se corta el ciclo principal
+en vez de reintentar el wait(), para pasar de inmediato a la limpieza de los procesos
+que están activos.
 
 ## Memoria
 
