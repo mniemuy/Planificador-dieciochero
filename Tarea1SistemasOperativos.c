@@ -9,7 +9,8 @@
 #include <signal.h> //para la inspeccion de la seremi (Ctrl+C)
 #include <errno.h> //para saber si wait() se corto por una señal
 
-#define TAM_MSG 128 //tamaño del mensaje acotado que viaja por cada pipe
+#define TAM_MSG 128  
+//tamaño del mensaje acotado que viaja por cada pipe
 
 struct datoken{
 char* ID_Actividad;
