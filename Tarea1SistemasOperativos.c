@@ -202,7 +202,7 @@ while(getline(&buffer, &capacidad, f) != -1){
         sep = strtok_r(NULL, ":", &save);
     }
 
-    //estas 4 lineas quedan FUERA del while de arriba a proposito: asi se
+    //estas 4 lineas quedan FUERA del while de arriba un purpleXD: asi se
     //ejecutan siempre, tenga la linea 4 campos completos o no (nodo raiz
     //sin dependencias, o el caso extremo de la ultima linea sin salto de
     //linea final que ni al ind==3 llega)
@@ -230,8 +230,8 @@ if(malformado || c2 != c){
     return -1;
 }
 
-//armamos el DAG de verdad: por cada actividad, por cada dependencia suya,
-//buscamos que actividad tiene ese ID y le avisamos "che, yo dependo de ti"
+//armamos el DAG de verdad. por cada actividad, por cada dependencia suya,
+//buscamos que actividad tiene ese ID y le avisamos "soy el alumno en practica"
 for(int i = 0; i < c; i++){
     for(int j = 0; j < espacio[i].nd; j++){
         int encontrada = 0;
@@ -268,7 +268,7 @@ if(malformado){
     return -1;
 }
 
-//según la tarea son alfanuméricas, es decisión de diseño un poco más ineficiente,
+//según la tarea son alfanuméricas, es decisión de diseño un poco más leseada,
 //pero funciona para cualquier nombre de id que le pongan
 //strcmp va comparando una a una actividades k, con dependencias j de una actividad i
 //si son iguales, hace que en dlist del espacio en la posición k, se haga un espacio
@@ -314,8 +314,8 @@ while((qini < qend || activos > 0) && !llego_la_seremi){
 
         if(espacio[idx].fail){
             //esta actividad ya viene marcada como abortada porque alguna
-            //dependencia suya fallo antes que ella. no la ejecutamos, pero
-            //igual hay que avisarle a SUS dependientes que se abortan tambien
+            //dependencia suya fallo antes. no la ejecutamos por ende, pero
+            //igual hay que avisarle a SUS subcontratados que se abortan tambien
             abortar_dependientes(espacio, idx, q, &qend);
             procesadas++;
             continue; //no gastamos cupo de K en algo que ni se ejecuta
@@ -334,8 +334,8 @@ while((qini < qend || activos > 0) && !llego_la_seremi){
         if(pid == 0){
             close(espacio[idx].tuberia[0]);
 
-            //ojo con esto: fork() copia TODO, incluido el estado interno
-            //de rand(). sin resembrar aca, todos los hijos heredarían la
+            //ojardopolis aca: fork() copia indiscriminadamente, incluido el estado interno
+            //de rand()!!!!!1. sin resembrar aca, todos los hijos heredarían la
             //MISMA secuencia del padre y el "azar" del fallo saldria
             //identico en varios al mismo tiempo. getpid() nos asegura una
             //semilla distinta por cada hijo aunque nazcan en el mismo segundo
@@ -346,7 +346,7 @@ while((qini < qend || activos > 0) && !llego_la_seremi){
             ts.tv_nsec = (espacio[idx].tiempo_ms % 1000) * 1000000L;
             nanosleep(&ts, NULL); //usleep no esta declarado en modo estricto POSIX 2008, por eso nanosleep
 
-            int exito = (rand() % 10 != 0); //1 de cada 10 actividades falla, a proposito, pa poder probar el aislamiento de errores
+            int exito = (rand() % 10 != 0); //1 de cada 10 actividades falla, a proposito, para poder probar el aislamiento de errores (spoiler funciona bien)
 
             char msg[TAM_MSG];
             if(exito){
@@ -387,7 +387,7 @@ while((qini < qend || activos > 0) && !llego_la_seremi){
 
     if(pid_terminado == -1){
         if(errno == EINTR){
-            break; //nos interrumpio una señal (la seremi), cortamos.
+            break; //nos interrumpio una señal (la seremi), cortamos
         }
         continue;
     }
@@ -438,7 +438,7 @@ while((qini < qend || activos > 0) && !llego_la_seremi){
 }
 
 if(llego_la_seremi){
-    fprintf(stderr, "\nLlego la Seremi! Cierren los puestos, tiren los choripanes apaguen la music \n");
+    fprintf(stderr, "\nVamos cerrando \n");
 
     for(int i = 0; i < c; i++){
         if(espacio[i].corriendo)
@@ -460,7 +460,7 @@ if(llego_la_seremi){
 }
 
 if(procesadas < c){
-    fprintf(stderr, "Error: quedaron actividades y sin resolver (posible ciclo en las dependencias).\n");
+    fprintf(stderr, "Error: quedaron actividades y sin resolver (posible ciclo en las dependencias)\n");
     free(q);
     liberar_espacio(espacio, c);
     free(buffer);
