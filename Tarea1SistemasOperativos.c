@@ -367,7 +367,7 @@ while((qini < qend || activos > 0) && !llego_la_seremi){
             activos++;
 
         } else {
-            //fork() fallo de verdad (raro, pero con 10000 actividades no es imposible)
+            //fork() fallo (raro, pero con 10000 actividades todo es posible)
             close(espacio[idx].tuberia[0]);
             close(espacio[idx].tuberia[1]);
             espacio[idx].fail = 1;
@@ -387,7 +387,7 @@ while((qini < qend || activos > 0) && !llego_la_seremi){
 
     if(pid_terminado == -1){
         if(errno == EINTR){
-            break; //nos interrumpio una señal (la seremi), cortamos y vamos a limpiar afuera
+            break; //nos interrumpio una señal (la seremi), cortamos.
         }
         continue;
     }
@@ -407,8 +407,8 @@ while((qini < qend || activos > 0) && !llego_la_seremi){
 
     espacio[idx_terminado].corriendo = 0;
 
-    //leemos el mensaje que la actividad mando por su tuberia antes de morir.
-    //como wait() recien confirmo que ya termino, el mensaje ya esta esperando ahi
+    //leemos el mensaje que la actividad mando por su pipe antes de morir.
+    //como wait() recien confirmo que termino, el mensaje ya estaba esperando
     ssize_t leidos = read(espacio[idx_terminado].tuberia[0],
                           espacio[idx_terminado].insumo, TAM_MSG - 1);
     if(leidos > 0)
@@ -438,7 +438,7 @@ while((qini < qend || activos > 0) && !llego_la_seremi){
 }
 
 if(llego_la_seremi){
-    fprintf(stderr, "\nLlego la Seremi! Abortando todas las actividades...\n");
+    fprintf(stderr, "\nLlego la Seremi! Cierren los puestos, tiren los choripanes apaguen la music \n");
 
     for(int i = 0; i < c; i++){
         if(espacio[i].corriendo)
@@ -460,7 +460,7 @@ if(llego_la_seremi){
 }
 
 if(procesadas < c){
-    fprintf(stderr, "Error: quedaron actividades sin resolver (posible ciclo parcial en las dependencias).\n");
+    fprintf(stderr, "Error: quedaron actividades y sin resolver (posible ciclo en las dependencias).\n");
     free(q);
     liberar_espacio(espacio, c);
     free(buffer);
