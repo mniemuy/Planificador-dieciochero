@@ -204,9 +204,3 @@ que están activos.
 Al terminar normalmente se libera la estructura principal, los strings, las
 dependencias y las listas inversas. También se liberan en los caminos de
 error relevantes.
-
-## Importante
-
-No hay `pthread_create`, `pthread_join`, mutex, condition variables,
-semaphores de hilos ni ninguna otra herramienta de threads. La concurrencia
-del trabajo se implementa exclusivamente con procesos.
