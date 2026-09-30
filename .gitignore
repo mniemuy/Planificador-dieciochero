@@ -1,8 +1,6 @@
-cat > .gitignore << 'EOF'
 .vscode/
 tests/
 planificador
 generador_estres
 plan_estres.txt
 *.o
-EOF
