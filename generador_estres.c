@@ -6,7 +6,7 @@
 
 //este programa aparte genera un plan.txt gigante para la prueba de estrés
 //(criterio 2.4). cada actividad depende de 0 a 3 actividades ANTERIORES
-//elegidas al azar (nunca de una posterior), asi el grafo queda
+//elegidas al azar (nunca de una posterior) asi el grafo queda
 //garantizado aciclico sin tener que revisar nada despues
 int main(int argc, char* argv[]){
 if(argc != 2){

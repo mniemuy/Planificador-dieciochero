@@ -473,6 +473,6 @@ free(q);
 
 liberar_espacio(espacio, c);
 free(buffer);//o morimos
-fclose(f);//terminemos esto como lo empezamos luciano, juntos
+fclose(f);//terminemos esto como lo empezamos luciano, juntos.
 return 0;
 }

@@ -12,8 +12,6 @@ se hace con `fork()`, `wait()`, pipes y señales.
 - `generador_estres.c`: genera un plan grande para probar el criterio 2.4, para simular previo a la evaluación.
 - `plan.txt`: ejemplo de entrada.
 
-- `plan.txt`: ejemplo de entrada.
-
 Dejamos casi toda la lógica en un solo archivo (`Tarea1SistemasOperativos.c`)
 en vez de separar en varios .c/.h. Con el tamaño real del programa (un main,
 un par de funciones auxiliares como `trim()`, `liberar_espacio()` y
@@ -24,8 +22,7 @@ de verdad: `generador_estres.c` es un programa aparte porque se ejecuta
 aparte, antes y de forma independiente del planificador (genera el
 `plan_estres.txt` que después el planificador simplemente lee como
 cualquier otro plan), no porque comparta código con él.
- 
- 
+
 ## Compilación
 
 El programa principal se compila con:
