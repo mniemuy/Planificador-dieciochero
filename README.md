@@ -1,5 +1,7 @@
 # Planificador dieciochero
 
+**Integrantes:** Luciano Olivieri, Lukas Alexander Diaz Herrera
+
 Tarea 1 de Sistemas Operativos (UDP). Nuestro programa lee un archivo .txt, que es un plan de actividades, cada una
 con sus respectivas dependencias y lo ejecuta como un DAG usando procesos, pipes y señales.
 
