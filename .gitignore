@@ -1,1 +1,8 @@
-hola quetal acabo de ver esto KFDJKFJ
+cat > .gitignore << 'EOF'
+.vscode/
+tests/
+planificador
+generador_estres
+plan_estres.txt
+*.o
+EOF
