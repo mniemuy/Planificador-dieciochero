@@ -295,7 +295,7 @@ for(int i = 0; i < c; i++){
 }
 
 if(qend == 0 && c > 0){
-    fprintf(stderr, "Error: ninguna actividad esta lista para empezar (posible ciclo en las dependencias). Revise el plan.\n");
+    fprintf(stderr, "Error: ninguna actividad esta lista para empezar a ejecutar posible ciclo en las dependencias\n");
     free(q);
     liberar_espacio(espacio, c);
     free(buffer);
@@ -461,7 +461,7 @@ if(llego_la_seremi){
 }
 
 if(procesadas < c){
-    fprintf(stderr, "Error: quedaron actividades y sin resolver (posible ciclo en las dependencias)\n");
+    fprintf(stderr, "Error quedaron actividades y sin resolver posible ciclo PARCIAL en las dependencias\n");
     free(q);
     liberar_espacio(espacio, c);
     free(buffer);
